@@ -7,6 +7,7 @@ import os
 import torch
 import torch.nn as nn
 
+from transformers import AutoTokenizer
 from utils.model_utils import get_llm
 from utils.onoff_utils.onoff import block_replace, turn_off, turn_on
 from utils.data_utils import *
@@ -69,8 +70,10 @@ def sleb(
         result_folder: str = 'sleb_results',
         result_file: str = 'sleb_results.txt',
         dataset: str = 'wikitext2',
-        eval_ppl: bool = True,
-        eval_zeroshot: bool = False
+        eval_ppl: bool = False,
+        eval_zeroshot: bool = False,
+        save: bool = True,
+        save_dir: str = None,
 ):
     alive_list = [i for i in range(num_blocks)]
     removal_list = []
@@ -173,6 +176,17 @@ def sleb(
 
         for task in tasks:
             print(f"{task}: {results[task]}")
+
+    if save:
+        print(f"Saving the pruned model...")
+        if not eval_ppl:
+            model = block_remove(model, copy.deepcopy(removal_list))
+        model.to(torch.bfloat16)
+        if save_dir is None:
+            save_dir = model_name + f"SLEB-Remove-{num_remove_blocks}"
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model.save_pretrained(save_dir)
+        tokenizer.save_pretrained(save_dir)
 
     if not os.path.exists(result_folder):
         os.makedirs(result_folder)

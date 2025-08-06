@@ -6,7 +6,7 @@ def block_remove(model, kill_list):
     print(f"Removing layers... {kill_list}")
     if 'opt' in model.name.lower():
         return block_remove_opt(model, kill_list)
-    elif 'llama' in model.name.lower():
+    elif 'llama' in model.name.lower() or 'qwen' in model.name.lower():
         return block_remove_llama(model, kill_list)
     else:
         return None
