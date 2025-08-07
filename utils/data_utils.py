@@ -28,10 +28,10 @@ def get_tokenizer(model):
         tokenizer = AutoTokenizer.from_pretrained(model, use_fast=False)
     return tokenizer
 
-def get_wikitext2(nsamples, seed, seqlen, model, tokenizer, batch_size):
+def get_wikitext2(name, nsamples, seed, seqlen, model, tokenizer, batch_size):
     
-    traindata = load_dataset('wikitext', 'wikitext-2-raw-v1', split='train')
-    testdata = load_dataset('wikitext', 'wikitext-2-raw-v1', split='test')
+    traindata = load_dataset(name, split='train')
+    testdata = load_dataset(name, split='test')
 
     trainenc = tokenizer(" ".join(traindata['text']), return_tensors='pt')
     testenc = tokenizer("\n\n".join(testdata['text']), return_tensors='pt')
@@ -65,12 +65,12 @@ def get_wikitext2(nsamples, seed, seqlen, model, tokenizer, batch_size):
 
     return trainloader, testenc
 
-def get_c4(nsamples, seed, seqlen, model, tokenizer, batch_size):
+def get_c4(name, nsamples, seed, seqlen, model, tokenizer, batch_size):
    
     traindata = load_dataset(
-        'allenai/c4', data_files={'train': 'en/c4-train.00000-of-01024.json.gz'}, split='train'
+        name, data_files={'train': 'en/c4-train.00000-of-01024.json.gz'}, split='train'
     )
-    valdata = load_dataset('allenai/c4', data_files={'validation': 'en/c4-validation.00000-of-00008.json.gz'}, split='validation')
+    valdata = load_dataset(name, data_files={'validation': 'en/c4-validation.00000-of-00008.json.gz'}, split='validation')
 
     random.seed(seed)
     trainloader = []
@@ -114,24 +114,24 @@ def get_c4(nsamples, seed, seqlen, model, tokenizer, batch_size):
 def get_loaders(name, nsamples=128, seed=0, seqlen=2048, tokenizer=None, model='', batch_size=1):
     if tokenizer is None:
         tokenizer = get_tokenizer(model)
-    if 'wikitext2' in name:
-        return get_wikitext2(nsamples, seed, seqlen, model, tokenizer, batch_size)
+    if 'wikitext' in name:
+        return get_wikitext2(name, nsamples, seed, seqlen, model, tokenizer, batch_size)
     if 'c4' in name:
-        return get_c4(nsamples, seed, seqlen, model, tokenizer, batch_size)
+        return get_c4(name, nsamples, seed, seqlen, model, tokenizer, batch_size)
 
-def get_wikitext2_trainenc(seed, nsamples, seqlen, model, tokenizer, batch_size):
+def get_wikitext2_trainenc(name, seed, nsamples, seqlen, model, tokenizer, batch_size):
     
-    traindata = load_dataset('wikitext', 'wikitext-2-raw-v1', split='train')
+    traindata = load_dataset(name, split='train')
     traindata = traindata.shuffle(seed=seed)
     trainenc = tokenizer("\n\n".join(traindata[:nsamples]['text']), return_tensors='pt')
 
     return trainenc
 
-def get_c4_trainenc(seed, nsamples, seqlen, model, tokenizer, batch_size):
+def get_c4_trainenc(name, seed, nsamples, seqlen, model, tokenizer, batch_size):
     traindata = load_dataset(
-        'allenai/c4', data_files={'train': 'en/c4-train.00000-of-01024.json.gz'}, split='train'
+        name, data_files={'train': 'en/c4-train.00000-of-01024.json.gz'}, split='train'
     )
-    valdata = load_dataset('allenai/c4', data_files={'validation': 'en/c4-validation.00000-of-00008.json.gz'}, split='validation')
+    valdata = load_dataset(name, data_files={'validation': 'en/c4-validation.00000-of-00008.json.gz'}, split='validation')
     traindata = traindata.shuffle(seed=seed)
     
     trainenc = tokenizer(' '.join(traindata[:nsamples]['text']), return_tensors='pt')
@@ -146,7 +146,7 @@ def get_c4_trainenc(seed, nsamples, seqlen, model, tokenizer, batch_size):
 
 def get_trainloaders(name, nsamples=128, seed=0, seqlen=2048, model='', batch_size=1):
     tokenizer = get_tokenizer(model)
-    if 'wikitext2' in name:
-        return get_wikitext2_trainenc(seed, nsamples, seqlen, model, tokenizer, batch_size)
+    if 'wikitext' in name:
+        return get_wikitext2_trainenc(name, seed, nsamples, seqlen, model, tokenizer, batch_size)
     if 'c4' in name:
-        return get_c4_trainenc(seed, nsamples, seqlen, model, tokenizer, batch_size)
+        return get_c4_trainenc(name, seed, nsamples, seqlen, model, tokenizer, batch_size)

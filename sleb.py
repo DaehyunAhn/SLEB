@@ -6,6 +6,7 @@ import os
 
 import torch
 import torch.nn as nn
+import gc
 
 from transformers import AutoTokenizer
 from utils.model_utils import get_llm
@@ -185,6 +186,8 @@ def sleb(
         if save_dir is None:
             save_dir = model_name + f"SLEB-Remove-{num_remove_blocks}"
         tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+        model.config.num_hidden_layers -= len(removal_list)
         model.save_pretrained(save_dir)
         tokenizer.save_pretrained(save_dir)
 
